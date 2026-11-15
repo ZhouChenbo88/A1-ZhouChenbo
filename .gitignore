@@ -1,0 +1,22 @@
+# Compiled output
+out/
+bin/
+build/
+target/
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Submission artefacts (uploaded to Blackboard, not tracked)
+*.zip
