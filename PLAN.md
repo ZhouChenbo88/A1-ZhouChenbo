@@ -44,10 +44,25 @@ GitHub repository that already shows incremental progress.
 
 **Day 1 definition of done**
 
-- [ ] `javac` compiles the whole `src/` with no errors and no warnings
-- [ ] `java AssignmentOne` prints 9 professionals with role, days, services, role-specific detail
-- [ ] `git log --oneline` shows 4 descriptive commits from today
-- [ ] Repository is **private** on GitHub; WakaTime plugin installed and logging
+- [x] `javac -Xlint:all` compiles the whole `src/` with no errors and no warnings
+- [x] `java AssignmentOne` prints 9 professionals with role, days, services, role-specific detail
+- [x] `git log --oneline` shows descriptive commits from today (five, 21:52-22:03)
+- [x] Repository is **private** on GitHub at `https://github.com/ZhouChenbo88/A1-ZhouChenbo`
+- [ ] WakaTime plugin installed and logging (VS Code, needs the API key - see below)
+
+**Day 1 outcome**
+
+| Commit | Content |
+|---|---|
+| `341d872` | project skeleton, `.gitignore` |
+| `dab28e9` | this plan |
+| `64aea27` | Part 1 - `HealthProfessional` |
+| `c86e0bd` | Part 2 - five roles, `Prescribable`, `BloodSamplable` |
+| `476a3ff` | Part 3 - `AssignmentOne` demonstration, `README.md` |
+
+Twelve files, eight Java sources. `AssignmentOne` runs nine professionals across five
+roles, prints them through the base type, filters them by capability interface, and shows
+four invalid constructions being rejected by the Part 1 guards. Parts 4-6 remain.
 
 ---
 
