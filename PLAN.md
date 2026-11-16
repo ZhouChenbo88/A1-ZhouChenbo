@@ -83,6 +83,15 @@ video recorded, zip uploaded before 11:59 pm.
 | 8 | 18:00–19:00 | Submit on Blackboard: zip, repo link, WakaTime, video link, GenAI declaration. Verify the upload actually appears. | submission | — |
 | 9 | Buffer | Re-read rubric row by row against the code; fix anything that is only "Credit" level | — | all |
 
+**Day 2 outcome (evening session)**
+
+- [x] Part 4 — `Patient` (record), `ClinicSchedule`, `Appointment` (`LocalTime` + `Comparable`)
+- [x] Part 5 — `AppointmentManager`: `ArrayList`, double-booking rejected, filter by ID and phone, sort, cancel both ways, message on every path
+- [x] Part 6 — nine demonstration sections, six of them failures that must be refused
+- [x] `README.md` rewritten: design rationale, both diagrams, constraint table, judgement call recorded
+- [x] Bilingual presentation script and demonstration cue sheet (separate Word document)
+- [ ] WakaTime report, video recording, zip, Blackboard submission — these are the student's own steps
+
 ---
 
 ## HD checklist — what the top band actually demands
