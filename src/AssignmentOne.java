@@ -1,5 +1,6 @@
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -22,8 +23,8 @@ import static java.time.DayOfWeek.WEDNESDAY;
  * <p><b>Run order.</b> Each block of the demonstration is isolated in its own private
  * method and prints its own heading, so the console reads as a numbered walkthrough:</p>
  * <ol>
- *   <li>Part 3 - create and display every health professional (implemented)</li>
- *   <li>Part 6 - appointment management, normal and error cases (next stage)</li>
+ *   <li>Part 3 - create and display every health professional</li>
+ *   <li>Part 6 - book, list, filter, sort, cancel, and every way those can fail</li>
  * </ol>
  *
  * @author Zhou Chenbo (25259780)
@@ -41,6 +42,13 @@ public class AssignmentOne {
     private static final String DIVIDER = "-".repeat(78);
 
     /**
+     * Column headings for an appointment list, built with the same format string as
+     * {@link Appointment#toString()} so the headings always line up with the rows.
+     */
+    private static final String APPOINTMENT_HEADER =
+            String.format("%s   %-16s %-16s %s", "TIME", "PATIENT", "PHONE", "HEALTH PROFESSIONAL");
+
+    /**
      * Entry point: builds the professional roster and demonstrates Parts 3 and 6.
      *
      * @param args not used
@@ -50,6 +58,7 @@ public class AssignmentOne {
 
         List<HealthProfessional> professionals = buildHealthProfessionals();
         runPartThree(professionals);
+        runPartSix(professionals);
     }
 
     /* ================================================================== */
@@ -263,6 +272,142 @@ public class AssignmentOne {
         } catch (IllegalArgumentException exception) {
             System.out.printf("  [REJECTED]   %-26s -> %s%n", description, exception.getMessage());
         }
+    }
+
+    /* ================================================================== */
+    /* Part 6 - working with appointments                                  */
+    /* ================================================================== */
+
+    /**
+     * Drives the appointment system end-to-end: book, list, filter, sort, cancel, and every
+     * way those operations can fail.
+     *
+     * <p>The order matters. Everything that succeeds runs first so the book is populated and
+     * the filtering has something to find; the cancellations come next so the before/after
+     * view proves the collection changed; the refusals come last, because they are attempts
+     * to do something the rules forbid and they leave the book unchanged.</p>
+     *
+     * @param professionals the roster to book from
+     */
+    private static void runPartSix(List<HealthProfessional> professionals) {
+        AppointmentManager manager = new AppointmentManager();
+
+        HealthProfessional drNguyen = findProfessional(professionals, "1001");
+        HealthProfessional drBell = findProfessional(professionals, "1002");
+        HealthProfessional drFischer = findProfessional(professionals, "2001");
+        HealthProfessional drCole = findProfessional(professionals, "3001");
+        HealthProfessional msLim = findProfessional(professionals, "4001");
+        HealthProfessional mrWu = findProfessional(professionals, "5001");
+
+        Patient ethan = new Patient("Ethan Park", "0412 345 678");
+        Patient mei = new Patient("Mei Lin", "0433 998 211");
+        Patient oskar = new Patient("Oskar Jensen", "0455 102 334");
+
+        printSection("PART 6.1  The clinic timetable");
+        System.out.println("   " + manager.getSchedule().describe());
+        List<String> slotLabels = manager.getSchedule().getSlots().stream()
+                .map(LocalTime::toString)
+                .toList();
+        System.out.println("   " + String.join(", ", slotLabels));
+
+        printSection("PART 6.2  Booking across the different professional types");
+        say(manager.addAppointment(ethan, drNguyen, LocalTime.of(9, 0)));
+        say(manager.addAppointment(mei, drFischer, LocalTime.of(9, 0)));
+        System.out.println("      (09:00 is now taken for 1001 but still free for 2001:"
+                + " the rule is per professional.)");
+        say(manager.addAppointment(oskar, drNguyen, LocalTime.of(10, 30)));
+        say(manager.addAppointment(ethan, msLim, LocalTime.of(11, 0)));
+        say(manager.addAppointment(mei, mrWu, LocalTime.of(14, 0)));
+        say(manager.addAppointment(ethan, drBell, LocalTime.of(14, 0)));
+        say(manager.addAppointment(oskar, drCole, LocalTime.of(15, 0)));
+
+        printSection("PART 6.3  Every appointment, sorted earliest to latest");
+        printAppointments("   The book after booking:", manager.allAppointments());
+
+        printSection("PART 6.4  Filtering by health professional ID");
+        printAppointments("   Professional 1001 (Dr Alice Nguyen):",
+                manager.appointmentsForProfessional("1001"));
+        printAppointments("   Professional 2001 (Dr Elena Fischer):",
+                manager.appointmentsForProfessional("2001"));
+        printAppointments("   Professional 5001 (Daniel Wu):",
+                manager.appointmentsForProfessional("5001"));
+        printAppointments("   Professional 2002 (Dr Samuel Okafor, nobody has booked):",
+                manager.appointmentsForProfessional("2002"));
+
+        printSection("PART 6.5  Filtering by patient phone number");
+        printAppointments("   Searching for \"0433 998 211\" (typed with spaces):",
+                manager.appointmentsForPatient("0433 998 211"));
+        printAppointments("   Searching for \"0433998211\" (typed without spaces):",
+                manager.appointmentsForPatient("0433998211"));
+
+        printSection("PART 6.6  Cancelling by professional ID and time slot");
+        say(manager.cancelByProfessionalAndTime("1001", LocalTime.of(10, 30)));
+        printAppointments("   Professional 1001 after the cancellation:",
+                manager.appointmentsForProfessional("1001"));
+        say(manager.addAppointment(new Patient("Nina Alvarez", "0422 876 501"),
+                drNguyen, LocalTime.of(10, 30)));
+        System.out.println("      (the cancelled slot can be booked again immediately.)");
+
+        printSection("PART 6.7  Cancelling by patient phone number");
+        say(manager.cancelByPatientPhone("0433998211"));
+        printAppointments("   The whole book after the cancellation:", manager.allAppointments());
+
+        printSection("PART 6.8  Operations that cannot be completed");
+        say(manager.addAppointment(ethan, drNguyen, LocalTime.of(9, 0)));
+        say(manager.addAppointment(ethan, drBell, LocalTime.of(9, 15)));
+        say(manager.addAppointment(ethan, drBell, LocalTime.of(17, 0)));
+        say(manager.addAppointment(ethan, null, LocalTime.of(12, 0)));
+        say(manager.cancelByProfessionalAndTime("2001", LocalTime.of(15, 0)));
+        say(manager.cancelByPatientPhone("0499 000 111"));
+
+        printSection("PART 6.9  Final state of the book");
+        printAppointments("   " + manager.size() + (manager.size() == 1 ? " appointment" : " appointments")
+                + " remain:", manager.allAppointments());
+    }
+
+    /**
+     * Prints an appointment list with a heading, a column header and a count.
+     *
+     * @param title        the heading to print
+     * @param appointments the appointments to print; an empty list prints a clear message
+     */
+    private static void printAppointments(String title, List<Appointment> appointments) {
+        System.out.println(title);
+        if (appointments.isEmpty()) {
+            System.out.println("   (no appointments found)");
+            System.out.println();
+            return;
+        }
+        System.out.println("   " + APPOINTMENT_HEADER);
+        for (Appointment appointment : appointments) {
+            System.out.println("   " + appointment);
+        }
+        System.out.printf("   %d appointment%s shown.%n%n",
+                appointments.size(), appointments.size() == 1 ? "" : "s");
+    }
+
+    /**
+     * Prints the message an operation returned, indented under its section heading.
+     *
+     * @param message the message returned by the appointment manager
+     */
+    private static void say(String message) {
+        System.out.println("   " + message);
+    }
+
+    /**
+     * Looks a professional up by ID.
+     *
+     * @param professionals the roster to search
+     * @param id            the ID to find
+     * @return the matching professional
+     * @throws IllegalArgumentException if no professional has that ID
+     */
+    private static HealthProfessional findProfessional(List<HealthProfessional> professionals, String id) {
+        return professionals.stream()
+                .filter(professional -> professional.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No professional with ID " + id));
     }
 
     /* ================================================================== */
